@@ -1,0 +1,38 @@
+name: LaTeX Deploy
+
+on:
+  push:
+    branches:
+      - main # Set a branch name to trigger deployment
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compile CV LaTeX document in english
+        uses: xu-cheng/latex-action@v2
+        with:
+          working_directory: ./cv
+          root_file: cv_en.tex
+          latexmk_use_xelatex: true
+          post_compile: "mv cv_en.pdf ../public && cp ../public/cv_en.pdf ../public/cv.pdf"
+
+      - name: Compile CV LaTeX document in french
+        uses: xu-cheng/latex-action@v2
+        with:
+          working_directory: ./cv
+          root_file: cv_fr.tex
+          latexmk_use_xelatex: true
+          post_compile: "mv cv_fr.pdf ../public"
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          cname: ${{secrets.CNAME}}
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: ${{ github.event.head_commit.message }}
